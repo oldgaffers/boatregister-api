@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "boatregister-api"
+version = "0.1.0"
+description = ""
+repository = "https://github.com/oldgaffers/boatregister-api"
+authors = ["jcable <julian.cable@yahoo.com>"]
+readme = "README.md"
+packages = [{include = "boatregister_api"}]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+simplejson = "^3.19.2"
+
+[tool.poetry.group.dev.dependencies]
+boto3 = "^1.26.118"
+pytest = "^7.3.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

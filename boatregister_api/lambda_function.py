@@ -130,19 +130,6 @@ def rbc60registrationmail(data, email):
     }
     return sendmail(mail)
 
-def register(body, ddb_table):
-    item = {
-     "topic": "RBC 60",
-     "email": body['user']['email'],
-     "created_at": body['payment']['create_time'],
-     "id": 0,
-    }
-    del body['user']
-    item['data'] = body
-    ddb_table.put_item(Item=item)
-    # print('put to member_entries', item)
-    return rbc60registrationmail(item['data'], item['email'])
-
 def compose_profile(body):
     mail = { 'subject': f"Membership data change request for {body['firstname']} {body['lastname']} ({body['member']})"}
     text = [f"Member {body['firstname']} {body['lastname']} ({body['member']}) would like to make some changes."]
@@ -169,7 +156,8 @@ def map_values(d):
         r[k] = val
     return r
 
-def putChangedFields(ddb_table, body):
+def putChangedFields(scope, table, body):
+    ddb_table = dynamodb.Table(f"{scope}_{table}")
     data = {**body}
     if 'key' in body:
         r = ddb_table.get_item(Key=body['key'])
@@ -182,90 +170,103 @@ def putChangedFields(ddb_table, body):
     data = map_values(data)
     ddb_table.put_item(Item=data)
 
+def register_for_rbc60(scope, body):
+    item = {
+     "topic": "RBC 60",
+     "email": body['user']['email'],
+     "created_at": body['payment']['create_time'],
+     "id": 0,
+    }
+    del body['user']
+    item['data'] = body
+    ddb_table = dynamodb.Table(f"{scope}_register")
+    ddb_table.put_item(Item=item)
+    # print('put to member_entries', item)
+    return rbc60registrationmail(item['data'], item['email'])
+
+def gets(scope, table, qsp):
+    ddb_table = dynamodb.Table(f"{scope}_{table}")
+    try:
+        if qsp is None:
+            data = ddb_table.scan()
+            items = data['Items']
+        else:
+            sf = {key: { 'AttributeValueList': [paramMap(value)], 'ComparisonOperator': 'EQ'} for key, value in qsp.items()}
+            data = ddb_table.scan(ScanFilter=sf)
+            items = [{k:item[k] for k in item.keys() if k not in ['hide','paym']} for item in data['Items'] if 'hide' not in item or not item['hide']]
+        meta = data.pop('ResponseMetadata')
+        return {
+            'statusCode': meta['HTTPStatusCode'],
+            'body': json.dumps({ 'Items': items, 'Count': len(items), 'ScannedCount': data['ScannedCount']})
+        }
+    except:
+        return {
+            'statusCode': 404,
+            'body': json.dumps("that doesn't seem to be here")
+        }
+
+def puts(scope, table, body):
+    if table in ['', 'contact', 'enquiry']:
+        return {
+            'statusCode': 404,
+            'body': json.dumps("that doesn't seem to be here")
+        }
+    ddb_table = dynamodb.Table(f"{scope}_{table}")
+    try:
+        response = ddb_table.put_item(Item=body)
+        if 'email' in body:
+            sendmail(compose_enquiry(body))
+        return {
+            'statusCode': response['ResponseMetadata']['HTTPStatusCode'],
+            'body': json.dumps('')
+        }
+    except:
+        return {
+            'statusCode': 404,
+            'body': json.dumps("that doesn't seem to be here")
+        }
+
+def posts(scope, table, body):
+    if table == 'contact':
+        return contact(body)
+    if table == 'enquiry':
+        return enquiry(body)
+    if table == 'profile':
+        return profile(body)
+    if 'to' in body or 'cc' in body or 'bcc' in body:
+        return sendmail(body)
+    if table == 'register':
+        return register_for_rbc60(scope, body)
+    if table != '':
+        putChangedFields(scope, table, body)
+    return {
+        'statusCode': 200,
+        'body': json.dumps("put data to table")
+    }
+
 def lambda_handler(event, context):
     # print(json.dumps(event))
-    if 'scope' in event['pathParameters']:
-        scope = event['pathParameters']['scope']
-    else:
-        scope = 'public'
-    if 'table' in event['pathParameters']:
-        table = event['pathParameters']['table']
-    else:
-        table = ''
-    if table in ['', 'contact', 'enquiry']:
-        ddb_table = None # dummy tables
-    else:
-        ddb_table = dynamodb.Table(f"{scope}_{table}")
+    scope = event['pathParameters'].get('scope', 'public')
+    table = event['pathParameters'].get('table', '')
     if 'authorizer' in event['requestContext']:
         claims = event['requestContext']['authorizer']['claims']
     else:
         claims = {}
-    if 'https://oga.org.uk/roles' in claims:
-        oga_claims = claims['https://oga.org.uk/roles']
-        if scope in oga_claims:
-            # print('scope matches')
-            pass
-        else:
-            return {
-                'statusCode': 403,
-                'body': json.dumps("user does not have permission to access this table")
-            } 
-    qsp = event['queryStringParameters']
+    if scope in claims.get('https://oga.org.uk/roles', ''):
+        # print('scope matches')
+        pass
+    else:
+        return {
+            'statusCode': 403,
+            'body': json.dumps("user does not have permission to access this table")
+        } 
     # print('claims', claims)
     if event['httpMethod'] == 'GET':
-        try:
-            # print('qsp', qsp)
-            if qsp is None:
-                data = ddb_table.scan()
-                items = data['Items']
-            else:
-                sf = {key: { 'AttributeValueList': [paramMap(value)], 'ComparisonOperator': 'EQ'} for key, value in qsp.items()}
-                data = ddb_table.scan(ScanFilter=sf)
-                items = [{k:item[k] for k in item.keys() if k not in ['hide','paym']} for item in data['Items'] if 'hide' not in item or not item['hide']]
-            meta = data.pop('ResponseMetadata')
-            return {
-                'statusCode': meta['HTTPStatusCode'],
-                'body': json.dumps({ 'Items': items, 'Count': len(items), 'ScannedCount': data['ScannedCount']})
-            }
-        except:
-            return {
-                'statusCode': 404,
-                'body': json.dumps("that doesn't seem to be here")
-            }
+        return gets(scope, table, event['queryStringParameters'])
     elif event['httpMethod'] == 'PUT':
-        try:
-            body = json.loads(event['body'])
-            # print(json.dumps(body))
-            response = ddb_table.put_item(Item=body)
-            if 'email' in body:
-                sendmail(compose_enquiry(body))
-            return {
-                'statusCode': response['ResponseMetadata']['HTTPStatusCode'],
-                'body': json.dumps('')
-            }
-        except:
-           return {
-               'statusCode': 404,
-               'body': json.dumps("that doesn't seem to be here")
-           }
+        return puts(scope, table, json.loads(event['body']))
     elif event['httpMethod'] == 'POST':
-        body = json.loads(event['body'])
-        if table == 'contact':
-            return contact(body)
-        if table == 'enquiry':
-            return enquiry(body)
-        if table == 'register':
-            return register(body, ddb_table)
-        if table == 'profile':
-            return profile(body)
-        if 'to' in body or 'cc' in body or 'bcc' in body:
-            return sendmail(body)
-        if ddb_table is not None:
-            putChangedFields(ddb_table, body)
-        return {
-            'statusCode': 200,
-            'body': json.dumps("put data to table")
-        }
+        return posts(scope, table, json.loads(event['body']))
     else:
         return {
             'statusCode': 200,
