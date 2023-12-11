@@ -24,7 +24,7 @@ jobs:
         run: |
           poetry run pip install -t dist .
           cd dist
-          mv boatregister_api/lambda_function.py .
+          mv boatregister_api/*.py .
           zip -x 'boatregister_api*' '*.pyc' -r ../lambda.zip . 
       - name: cred
         uses: aws-actions/configure-aws-credentials@v1
