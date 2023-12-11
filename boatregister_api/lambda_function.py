@@ -261,8 +261,9 @@ def lambda_handler(event, context):
     if 'authorizer' in event['requestContext']:
         claims = event['requestContext']['authorizer']['claims']
     else:
-        claims = {}
-    if scope in claims.get('https://oga.org.uk/roles', ''):
+        claims = {'https://oga.org.uk/roles': []}
+    roles = claims['https://oga.org.uk/roles'] + ['public']
+    if scope in roles:
         # print('scope matches')
         pass
     else:
