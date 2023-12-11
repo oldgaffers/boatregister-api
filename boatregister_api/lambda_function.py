@@ -3,6 +3,8 @@ import boto3
 import smtplib
 from datetime import datetime, timedelta
 from decimal import Decimal
+from updates import update_tables
+from places import geocode
 
 ssm = boto3.client('ssm')
 s3 = boto3.client('s3')
@@ -190,6 +192,8 @@ def gets(scope, table, qsp):
         if qsp is None:
             data = ddb_table.scan()
             items = data['Items']
+        elif table == 'place':
+            return geocode(dynamodb, qsp)            
         else:
             sf = {key: { 'AttributeValueList': [paramMap(value)], 'ComparisonOperator': 'EQ'} for key, value in qsp.items()}
             data = ddb_table.scan(ScanFilter=sf)
@@ -227,6 +231,12 @@ def puts(scope, table, body):
         }
 
 def posts(scope, table, body):
+    if table == 'update':
+        update_tables(dynamodb, body)
+        return {
+            'statusCode': 200,
+            'body': json.dumps("triggered update from boatregister")
+        }
     if table == 'contact':
         return contact(body)
     if table == 'enquiry':
