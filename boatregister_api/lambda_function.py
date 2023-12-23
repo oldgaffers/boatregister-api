@@ -160,7 +160,7 @@ def map_values(d):
 
 def putChangedFields(scope, table, body):
     ddb_table = dynamodb.Table(f"{scope}_{table}")
-    data = {**body}
+    data = json.loads(json.dumps(body), parse_float=Decimal)
     if 'key' in body:
         r = ddb_table.get_item(Key=body['key'])
         if 'Item' in r:
