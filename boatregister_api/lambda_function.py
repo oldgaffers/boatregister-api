@@ -1,50 +1,13 @@
 import simplejson as json
 import boto3
-import smtplib
 from datetime import datetime, timedelta
 from decimal import Decimal
 from updates import update_tables
 from places import geocode
+from mail import sendmail
 
-ssm = boto3.client('ssm')
 s3 = boto3.client('s3')
 dynamodb = boto3.resource('dynamodb')
-
-def sendmail(mail):
-    # print('sendmail', mail)
-    r = ssm.get_parameter(Name='MAIL_HOST')
-    host = r['Parameter']['Value']
-    r = ssm.get_parameter(Name='MAIL_PORT')
-    port = int(r['Parameter']['Value'])
-    r = ssm.get_parameter(Name='MAIL_USER')
-    user = r['Parameter']['Value']
-    r = ssm.get_parameter(Name='MAIL_PASSWORD', WithDecryption=True)
-    password = r['Parameter']['Value']
-    server = smtplib.SMTP_SSL(host, port)
-    server.login(user, password)
-    fromaddr = user
-    toaddrs  = []
-    headers = [f'From: {fromaddr}']
-    if 'reply-to' in mail:
-        headers.append(f"Reply-To: {mail['reply-to']}")
-    if 'to' in mail:
-        headers.append(f"To: {', '.join(mail['to'])}")
-        toaddrs.extend(mail['to'])
-    if 'cc' in mail:
-        headers.append(f"Cc: {', '.join(mail['cc'])}")
-        toaddrs.extend(mail['cc'])
-    if 'bcc' in mail:
-        toaddrs.extend(mail['bcc'])
-    toaddrs.append(user) # make sure boatregister is included
-    headers.append(f"Subject: {mail['subject']}")
-    msg = "\r\n".join(headers + mail['message'].split("\n"))
-    server.sendmail(fromaddr, toaddrs, msg)
-    server.quit()
-    # print('mail sent', json.dumps(headers))
-    return {
-        'statusCode': 200,
-        'body': json.dumps('your mail has been sent')
-    }
 
 def json_from_object(bucket, key):
     r = s3.get_object(Bucket=bucket, Key=key)
