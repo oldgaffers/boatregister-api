@@ -162,14 +162,14 @@ def putChangedFields(scope, table, body):
     data = map_values(data)
     ddb_table.put_item(Item=data)
 
-def gets(scope, table, qsp):
+def gets(scope, table, qsp, timestamp):
     ddb_table = dynamodb.Table(f"{scope}_{table}")
     try:
         if qsp is None:
             data = ddb_table.scan()
             items = data['Items']
         elif table == 'place':
-            return geocode(dynamodb, qsp)            
+            return geocode(dynamodb, qsp, timestamp)            
         else:
             sf = {key: { 'AttributeValueList': [paramMap(value)], 'ComparisonOperator': 'EQ'} for key, value in qsp.items()}
             data = ddb_table.scan(ScanFilter=sf)
@@ -247,7 +247,7 @@ def lambda_handler(event, context):
             'body': json.dumps("user does not have permission to access this table")
         } 
     if event['httpMethod'] == 'GET':
-        return gets(scope, table, event['queryStringParameters'])
+        return gets(scope, table, event['queryStringParameters'], event['requestContext']['requestTimeEpoch'])
     elif event['httpMethod'] == 'PUT':
         return puts(scope, table, json.loads(event['body']))
     elif event['httpMethod'] == 'POST':

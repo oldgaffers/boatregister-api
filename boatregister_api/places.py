@@ -31,7 +31,7 @@ def mapDdbData(item):
     data['geonameId'] = int(data['geonameId'])
   return data
 
-def geocode(dynamodb, qsp):
+def geocode(dynamodb, qsp, timestamp):
   name = qsp['name']
   ddb_table = dynamodb.Table('geonames_cache')
   r = ddb_table.get_item(Key={ 'name': name })
@@ -49,7 +49,7 @@ def geocode(dynamodb, qsp):
     data = choose(p['geonames'], name)
   if n == 0:
     data = { 'message': 'not found' }
-  ddb_table.put_item(Item={**qsp, **data})
+  ddb_table.put_item(Item={**qsp, **data, 'timestamp': timestamp + 86400 })
   return {
       'statusCode': 200,
       'body': json.dumps(data)
