@@ -4,7 +4,7 @@ import urllib.parse
 import boto3
 
 ssm = boto3.client('ssm')
-r = ssm.get_parameter(Name='GOOGLE/GEO_API_KEY')
+r = ssm.get_parameter(Name='/GOOGLE/GEO_API_KEY')
 api_key = r['Parameter']['Value']
 
 def googlegeolocate(place):
