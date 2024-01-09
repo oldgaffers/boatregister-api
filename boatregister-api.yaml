@@ -22,6 +22,8 @@ Resources:
       Policies:
         - SSMParameterReadPolicy:
             ParameterName: MAIL_*
+        - SSMParameterReadPolicy:
+            ParameterName: GOOGLE/GEO_API_KEY
         - SNSPublishMessagePolicy:
             TopicName: boatenquiry
         - DynamoDBCrudPolicy:
