@@ -25,6 +25,8 @@ def sendmail(mail):
     fromaddr = user
     toaddrs  = []
     headers = [f'From: {fromaddr}']
+    if 'reply-to' in mail:
+        headers.append(f"Reply-To: {mail['reply-to']}")
     if 'to' in mail:
         headers.append(f"To: {', '.join(mail['to'])}")
         toaddrs.extend(mail['to'])
@@ -68,9 +70,11 @@ def getDear(members):
     return "folks"
 
 def compose_contact(body):
-    if 'member' not in body:
+    id = body.get('id', body.get('member', None))
+    # print('compose_contact', id)
+    if id is None:
         return None
-    member = getMember(body['member'])
+    member = getMember(id)
     dear = getDear([member])
     your = 'your '
     name = 'an OGA member'
@@ -87,6 +91,7 @@ def compose_contact(body):
     mail = { 'subject': 'hello from an OGA member' }
     mail['message'] = "\n".join(text)
     mail['to'] = [member['Email']]
+    # print('compose_contact', mail)
     return mail
 
 def compose_enquiry(body):
@@ -94,6 +99,7 @@ def compose_enquiry(body):
     text = [f"{body['name']} has expressed interest in {body['topic']}.", 'The details are:']
     mail['message'] = "\n".join(text + [f"{field}: {body[field]}" for field in body.keys()])
     mail['to'] = [ body['email'], f"{body['topic']}@oga.org.uk"]
+    # print('compose_enquiry', mail)
     return mail
 
 def paramMap(val):
@@ -110,7 +116,6 @@ def contact(body):
     return sendmail(compose_contact(body))
     
 def enquiry(body):
-    # print('enquiry', json.dumps(body))
     sns = boto3.client('sns')
     sns.publish(
         TopicArn='arn:aws:sns:eu-west-1:651845762820:boatenquiry',
@@ -123,31 +128,16 @@ def enquiry(body):
         'body': json.dumps("Ok")
     }
 
-def rbc60registrationmail(data, email):
-    mail = {
-        'subject': 'RBC60 registration received',
-        'to': [ "oga60@oga.org.uk", "president@oga.org.uk" ],
-        'cc': [ email ],
-        'message': json.dumps(data, indent=4),
-    }
-    return sendmail(mail)
-
 def compose_profile(body):
-    mail = { 'subject': f"Membership data change request for {body['firstname']} {body['lastname']} ({body['member']})"}
-    text = [f"Member {body['firstname']} {body['lastname']} ({body['member']}) would like to make some changes."]
-    text.append(body['text'])
-    for key in ['salutation', 'telephone', 'mobile', 'area', 'town']:
-        if key in body and body[key].strip() != '':
-            text.append(f"{key}: {body[key]}")
-    for key in ['GDPR', 'smallboats']:
-        text.append(f"{key}: {body[key]}")
-    text.append(f"Interest Areas: {','.join(body['interests'])}")
-    mail['message'] = "\n".join(text)
+    id = body.get('id', body.get('member', None))
+    mail = { 'subject': f"Membership data change request for {body['firstname']} {body['lastname']} ({id})"}
+    mail['message'] = body['text']
     mail['to'] = ["membership@oga.org.uk"]
     return mail
 
 def profile(body):
-    return sendmail(compose_profile(body))
+    mail = compose_profile(body)
+    return sendmail(mail)
 
 def map_values(d):
     r = {}
@@ -171,20 +161,6 @@ def putChangedFields(scope, table, body):
         del data['key']
     data = map_values(data)
     ddb_table.put_item(Item=data)
-
-def register_for_rbc60(scope, body):
-    item = {
-     "topic": "RBC 60",
-     "email": body['user']['email'],
-     "created_at": body['payment']['create_time'],
-     "id": 0,
-    }
-    del body['user']
-    item['data'] = body
-    ddb_table = dynamodb.Table(f"{scope}_register")
-    ddb_table.put_item(Item=item)
-    # print('put to member_entries', item)
-    return rbc60registrationmail(item['data'], item['email'])
 
 def gets(scope, table, qsp):
     ddb_table = dynamodb.Table(f"{scope}_{table}")
@@ -245,8 +221,6 @@ def posts(scope, table, body):
         return profile(body)
     if 'to' in body or 'cc' in body or 'bcc' in body:
         return sendmail(body)
-    if table == 'register':
-        return register_for_rbc60(scope, body)
     if table != '':
         putChangedFields(scope, table, body)
     return {
@@ -272,7 +246,6 @@ def lambda_handler(event, context):
             'statusCode': 403,
             'body': json.dumps("user does not have permission to access this table")
         } 
-    # print('claims', claims)
     if event['httpMethod'] == 'GET':
         return gets(scope, table, event['queryStringParameters'])
     elif event['httpMethod'] == 'PUT':
