@@ -12,6 +12,8 @@ def mapDdbData(item):
     data['population'] = int(data['population'])
   if 'geonameId' in data:
     data['geonameId'] = int(data['geonameId'])
+  if 'timestamp' in data:
+    data['timestamp'] = int(data['timestamp'])
   return data
 
 def save(ddb_table, qsp, data, timestamp):
