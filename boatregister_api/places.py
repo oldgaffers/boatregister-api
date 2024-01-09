@@ -1,6 +1,7 @@
 import json
 import urllib.request
 import urllib.parse
+from decimal import Decimal
 
 def geonames(place):
   url = f'https://secure.geonames.org/searchJSON?username=oga_boatregister&country=uk&country=ie&name={urllib.parse.quote(place)}'
@@ -53,3 +54,19 @@ def geocode(dynamodb, qsp):
       'statusCode': 200,
       'body': json.dumps(data)
   }
+
+def mapfromgoogle(p):
+  l = p['geometry']['location']
+  print('L', l)
+  return {'lat': Decimal(l['lat']), 'lng': Decimal(l['lng'])}
+
+def googlegeolocate(place):
+  api_key = 'AIzaSyCZDcYQUxHFyGDz7Gal58EMrACIHcvcAuw'
+  url = f'https://maps.googleapis.com/maps/api/geocode/json?key={api_key}&address={urllib.parse.quote(place)}'
+  f = urllib.request.urlopen(url)
+  r = f.read()
+  j = json.loads(r)
+  if 'status' in j and j['status'] == 'OK':
+    all = j['results']
+    return [mapfromgoogle(p) for p in all]
+  return None
