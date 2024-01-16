@@ -21,7 +21,7 @@ def gold():
 
 def getMember(member):
     g = gold()
-    n = [m for m in g if m['ID'] == member]
+    n = [m for m in g if m['ID'] == member and m['status'] != 'Left OGA']
     if len(n) > 0:
         return n[0]
     return None
