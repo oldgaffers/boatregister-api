@@ -28,6 +28,8 @@ Resources:
             TopicName: boatenquiry
         - DynamoDBCrudPolicy:
             TableName: *
+        - SESCrudPolicy:
+            IdentityName: *
         - Statement:
             - Effect: Allow
               Action:
