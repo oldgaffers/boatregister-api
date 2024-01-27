@@ -15,13 +15,11 @@ def json_from_object(bucket, key):
     return json.loads(text)
     
 def gold():
-    d = datetime.now()
-    prev = (d - timedelta(days=1)).date().isoformat()
-    return json_from_object('boatregister', f'gold/{prev}.json')
+    return json_from_object('boatregister', 'gold/latest.json')
 
 def getMember(member):
     g = gold()
-    n = [m for m in g if m['ID'] == member and m['status'] != 'Left OGA']
+    n = [m for m in g if m['ID'] == member and m['Status'] != 'Left OGA']
     if len(n) > 0:
         return n[0]
     return None
