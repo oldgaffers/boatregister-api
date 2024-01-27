@@ -30,14 +30,18 @@ def geocode(dynamodb, qsp, timestamp):
       save(ddb_table, qsp, data, timestamp)
     data = mapDdbData(item)
     return {
+      'headers': { 'content-type': 'application/json' },
       'statusCode': 200,
       'body': json.dumps(data)
     }
   data = geonames(name)
+  # print('GN', data)
   if 'message' in data:
     data = googlegeolocate(name)
+  # print('GO', data)
   save(ddb_table, qsp, data, timestamp)
   return {
+      'headers': { 'content-type': 'application/json' },
       'statusCode': 200,
       'body': json.dumps(data)
   }

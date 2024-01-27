@@ -17,16 +17,16 @@ def update_extra(ddb_table, oga_no, update):
     if 'Item' in r:
         existing = r['Item']
         relevant = {k:v for (k,v) in existing.items() if k in update.keys()}
-        print(oga_no, relevant) 
+        # print(oga_no, relevant) 
         ddb_table.put_item(Item={**existing, **update})
     else:
         ddb_table.put_item(Item={'oga_no': oga_no, **update})
 
 def update_tables(dynamodb, body):
-    print('update_tables', json.dumps(body))
+    # print('update_tables', json.dumps(body))
     ddb_table = dynamodb.Table('public_crewing') # we should rename this
     for oga_no in body:
-        print(oga_no)
+        # print(oga_no)
         full = get_boat(oga_no)
         home_port = full.get('home_port', '').strip()
         if home_port != '':

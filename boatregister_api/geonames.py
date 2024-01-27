@@ -13,7 +13,7 @@ def choose(names, name):
 
 def geonames(place):
   url = f'https://secure.geonames.org/searchJSON?username=oga_boatregister&country=uk&country=ie&name={urllib.parse.quote(place)}'
-  print(url)
+  # print(url)
   f = urllib.request.urlopen(url)
   p = json.loads(f.read())
   n = p.get('totalResultsCount', 0)
