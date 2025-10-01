@@ -45,7 +45,7 @@ Resources:
                 - dynamodb:ListTables
               Resource: '*'
       Events:
-				Api1:
+        Api1:
           Type: HttpApi
           Properties:
             ApiId: !Ref HttpApi
