@@ -1,4 +1,5 @@
 import simplejson as json
+from boatregister_api.summarise import buildersummary
 import boto3
 from datetime import datetime, timedelta
 from decimal import Decimal
@@ -130,7 +131,9 @@ def gets(scope, table, qsp, timestamp):
             data = ddb_table.scan()
             items = data['Items']
         elif table == 'place':
-            return geocode(dynamodb, qsp, timestamp)            
+            return geocode(dynamodb, qsp, timestamp) 
+        elif table == 'builder':
+            return buildersummary(dynamodb, qsp, timestamp)            
         else:
             sf = {key: { 'AttributeValueList': [paramMap(value)], 'ComparisonOperator': 'EQ'} for key, value in qsp.items()}
             data = ddb_table.scan(ScanFilter=sf)
