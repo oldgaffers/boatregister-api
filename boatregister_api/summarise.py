@@ -1,7 +1,7 @@
 import json
 import openai
 import os
-from boatregister_api.builders import fetch_boatbuilder_history
+from builders import fetch_boatbuilder_history
 
 def buildersummary_internal(builders, builder):
     # You should set your OpenAI API key as an environment variable: OPENAI_API_KEY

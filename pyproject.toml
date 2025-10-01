@@ -11,6 +11,7 @@ packages = [{include = "boatregister_api"}]
 python = "^3.13"
 simplejson = "^3.19.2"
 openai = "^2.0.0"
+requests = "^2.32.5"
 
 [tool.poetry.group.dev.dependencies]
 boto3 = "^1.26.118"
