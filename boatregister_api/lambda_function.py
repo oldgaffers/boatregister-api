@@ -193,7 +193,7 @@ def posts(scope, table, body):
     }
 
 def lambda_handler(event, context):
-    # print(json.dumps(event))
+    print(json.dumps(event))
     scope = event['pathParameters'].get('scope', 'public')
     table = event['pathParameters'].get('table', '')
     if 'authorizer' in event['requestContext']:
