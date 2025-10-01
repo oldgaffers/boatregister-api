@@ -1,11 +1,11 @@
 import simplejson as json
-from boatregister_api.summarise import buildersummary
 import boto3
 from datetime import datetime, timedelta
 from decimal import Decimal
 from updates import update_tables
 from places import geocode
 from mail import sendmail
+from summarise import buildersummary
 
 s3 = boto3.client('s3')
 dynamodb = boto3.resource('dynamodb')
