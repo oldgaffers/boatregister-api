@@ -5,12 +5,14 @@ Resources:
   boatregisterapi:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: .
       Description: An AWS lambda function that sits behind an api gateway.
       MemorySize: 128
       Timeout: 3
       Handler: lambda_function.lambda_handler
-      Runtime: python3.11
+      InlineCode: >-
+        def lambda_handler(event, context):
+          print('Checking {} at {}...'.format(SITE, event['time']))      
+      Runtime: python3.13
       Architectures:
         - arm64
       EphemeralStorage:
@@ -24,19 +26,21 @@ Resources:
             ParameterName: MAIL_*
         - SSMParameterReadPolicy:
             ParameterName: GOOGLE/GEO_API_KEY
+        - SSMParameterReadPolicy:
+            ParameterName: SERPAPI/*
         - SNSPublishMessagePolicy:
             TopicName: boatenquiry
         - DynamoDBCrudPolicy:
-            TableName: *
+            TableName: public_*
+        - DynamoDBCrudPolicy:
+            TableName: private_*
         - SESCrudPolicy:
-            IdentityName: *
+            IdentityName: '*'
         - Statement:
             - Effect: Allow
               Action:
                 - dynamodb:ListTables
               Resource: '*'
-      SnapStart:
-        ApplyOn: None
       Events:
         Api1:
           Type: Api
@@ -46,21 +50,6 @@ Resources:
         Api2:
           Type: Api
           Properties:
-            Path: /public/{proxy+}
-            Method: ANY
-        Api3:
-          Type: Api
-          Properties:
             Path: /{scope}/{table+}
             Method: ANY
-        Api4:
-          Type: Api
-          Properties:
-            Path: /MyResource
-            Method: ANY
-        Api5:
-          Type: Api
-          Properties:
-            Path: /public/{table+}
-            Method: ANY
-      RuntimeManagementConfig: {}
+
