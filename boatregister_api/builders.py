@@ -4,14 +4,14 @@ import boto3
 from openai import OpenAI
 
 ssm = boto3.client('ssm')
-r = ssm.get_parameter(Name='SERPAPI/API_KEY', WithDecryption=False)
+r = ssm.get_parameter(Name='/SERPAPI/API_KEY', WithDecryption=False)
 SERP_API_KEY = r['Parameter']['Value']
 SERP_URL = "https://serpapi.com/search.json"
 
 BING_API_KEY = "your_bing_api_key_here"
 BING_ENDPOINT = "https://api.bing.microsoft.com/v7.0/search"
 
-r = ssm.get_parameter(Name='OPENAI/API_KEY', WithDecryption=False)
+r = ssm.get_parameter(Name='/OPENAI/API_KEY', WithDecryption=False)
 OPENAI_API_KEY = r['Parameter']['Value']
 
 # --- Web Search Engines ---
