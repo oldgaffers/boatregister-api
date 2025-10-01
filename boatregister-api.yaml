@@ -29,6 +29,8 @@ Resources:
             ParameterName: GOOGLE/GEO_API_KEY
         - SSMParameterReadPolicy:
             ParameterName: SERPAPI/*
+        - SSMParameterReadPolicy:
+            ParameterName: OPENAI/*
         - SNSPublishMessagePolicy:
             TopicName: boatenquiry
         - DynamoDBCrudPolicy:

@@ -3,9 +3,6 @@ import requests
 import boto3
 from openai import OpenAI
 
-# === Setup ===
-client = OpenAI()
-
 ssm = boto3.client('ssm')
 r = ssm.get_parameter(Name='SERPAPI/API_KEY', WithDecryption=False)
 SERP_API_KEY = r['Parameter']['Value']
@@ -14,6 +11,8 @@ SERP_URL = "https://serpapi.com/search.json"
 BING_API_KEY = "your_bing_api_key_here"
 BING_ENDPOINT = "https://api.bing.microsoft.com/v7.0/search"
 
+r = ssm.get_parameter(Name='OPENAI/API_KEY', WithDecryption=False)
+OPENAI_API_KEY = r['Parameter']['Value']
 
 # --- Web Search Engines ---
 
@@ -70,7 +69,7 @@ def refresh_boatbuilder_history(builder_name: str, engine: str = "serpapi") -> d
     return _generate_and_store_history(builder_name, engine)
 
 
-def delete_boatbuilder_history(builder_name: str) -> bool:
+def delete_boatbuilder_history(table, builder_name: str) -> bool:
     """
     Delete a boatbuilder's history from DynamoDB.
     Returns True if deletion was successful, False if the item did not exist.
@@ -118,7 +117,7 @@ def _generate_and_store_history(builder_name: str, engine: str) -> dict:
     origins, early_work, wartime, growth_innovation, decline_closure, legacy, sources.
     Sources should be a list of URLs.
     """
-
+    client = OpenAI(api_key = OPENAI_API_KEY)
     completion = client.chat.completions.create(
         model="gpt-5",
         messages=[{"role": "user", "content": query_prompt}],
