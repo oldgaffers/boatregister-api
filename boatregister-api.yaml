@@ -45,19 +45,19 @@ Resources:
                 - dynamodb:ListTables
               Resource: '*'
       Events:
-`       Api1:
+				Api1:
           Type: HttpApi
           Properties:
             ApiId: !Ref HttpApi
             Method: GET
             Path: /{scope}/{table+}
-`       Api1:
+        Api2:
           Type: HttpApi
           Properties:
             ApiId: !Ref HttpApi
             Method: POST
             Path: /{scope}/{table+}
-`       Api1:
+        Api3:
           Type: HttpApi
           Properties:
             ApiId: !Ref HttpApi
