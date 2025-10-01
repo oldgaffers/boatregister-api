@@ -81,12 +81,12 @@ Resources:
 			Auth:
 			  Authorizers:
     			OAuth2Authorizer:
-      			AuthorizationScopes:
-        			- scope1
-        			- scope2
+#      			AuthorizationScopes:
+#        			- scope1
+#        			- scope2
       			JwtConfiguration:
-        			issuer: "https://www.example.com/v1/connect/oauth2"
+        			issuer: "https://dev-uf87e942.eu.auth0.com/"
         			audience:
-          			- MyApi
-      			IdentitySource: "$request.querystring.param"
+          			- https://oga.org.uk/boatregister
+      			IdentitySource: "$request.header.Authorization"
   			DefaultAuthorizer: OAuth2Authorizer
