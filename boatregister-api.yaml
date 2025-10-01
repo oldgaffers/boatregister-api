@@ -45,14 +45,48 @@ Resources:
                 - dynamodb:ListTables
               Resource: '*'
       Events:
-        Api1:
-          Type: Api
+`       Api1:
+          Type: HttpApi
           Properties:
-            Path: /boatregister-api
-            Method: ANY
-        Api2:
-          Type: Api
-          Properties:
+            ApiId: !Ref HttpApi
+            Method: GET
             Path: /{scope}/{table+}
-            Method: ANY
-
+`       Api1:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Method: POST
+            Path: /{scope}/{table+}
+`       Api1:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Method: POST
+            Path: /shuffle
+	HttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+    	StageName: default
+			CorsConfiguration:
+  			AllowOrigins:
+    			- "https://oga.org.uk"
+    			- "https://www.oga.org.uk"
+  			AllowHeaders:
+    			- x-apigateway-header
+  			AllowMethods:
+    			- GET
+					- POST
+  			MaxAge: 600
+  			AllowCredentials: true
+			Auth:
+			  Authorizers:
+    			OAuth2Authorizer:
+      			AuthorizationScopes:
+        			- scope1
+        			- scope2
+      			JwtConfiguration:
+        			issuer: "https://www.example.com/v1/connect/oauth2"
+        			audience:
+          			- MyApi
+      			IdentitySource: "$request.querystring.param"
+  			DefaultAuthorizer: OAuth2Authorizer
