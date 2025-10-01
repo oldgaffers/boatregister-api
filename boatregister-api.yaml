@@ -5,6 +5,7 @@ Resources:
   boatregisterapi:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: boatregister-api
       Description: An AWS lambda function that sits behind an api gateway.
       MemorySize: 128
       Timeout: 3
