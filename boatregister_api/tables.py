@@ -130,9 +130,14 @@ def gets(scope, table, qsp, timestamp):
             data = ddb_table.scan()
             items = data['Items']
         elif table == 'place':
-            return geocode(dynamodb, qsp, timestamp) 
+            return geocode(dynamodb, qsp.get('builder', None), timestamp) 
         elif table == 'builder':
-            return buildersummary(dynamodb, qsp, timestamp)            
+            if 'builder' not in qsp:
+                return {
+                    'statusCode': 400,
+                    'body': json.dumps("missing builder parameter")
+                }
+            return buildersummary(ddb_table, qsp['builder'], timestamp)            
         else:
             sf = {key: { 'AttributeValueList': [paramMap(value)], 'ComparisonOperator': 'EQ'} for key, value in qsp.items()}
             data = ddb_table.scan(ScanFilter=sf)

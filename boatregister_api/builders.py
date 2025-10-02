@@ -1,7 +1,8 @@
 import json
 import requests
 import boto3
-from openai import OpenAI
+from summarise_with_openai import summarise
+from gemini import summarize_search_results
 
 ssm = boto3.client('ssm')
 r = ssm.get_parameter(Name='/SERPAPI/API_KEY', WithDecryption=False)
@@ -11,8 +12,6 @@ SERP_URL = "https://serpapi.com/search.json"
 BING_API_KEY = "your_bing_api_key_here"
 BING_ENDPOINT = "https://api.bing.microsoft.com/v7.0/search"
 
-r = ssm.get_parameter(Name='/OPENAI/API_KEY', WithDecryption=False)
-OPENAI_API_KEY = r['Parameter']['Value']
 
 # --- Web Search Engines ---
 
@@ -56,7 +55,7 @@ def fetch_boatbuilder_history(table, builder_name: str, engine: str = "serpapi")
         return response["Item"]["history"]
 
     print(f"[CACHE MISS] Fetching new result for {builder_name}")
-    return _generate_and_store_history(builder_name, engine)
+    return _generate_and_store_history(table, builder_name, engine)
 
 
 def refresh_boatbuilder_history(builder_name: str, engine: str = "serpapi") -> dict:
@@ -92,7 +91,7 @@ def delete_boatbuilder_history(table, builder_name: str) -> bool:
 
 # --- Internal Helper ---
 
-def _generate_and_store_history(builder_name: str, engine: str) -> dict:
+def _generate_and_store_history(table, builder_name: str, engine: str) -> dict:
     """Private helper to search web, summarize, and store in DynamoDB."""
 
     # Step 1: Search
@@ -104,27 +103,8 @@ def _generate_and_store_history(builder_name: str, engine: str) -> dict:
     else:
         raise ValueError("Unknown search engine")
 
-    snippets = "\n".join(
-        f"- {r['title']}: {r['snippet']} ({r['link']})" for r in search_results
-    )
-
-    # Step 2: Summarize
-    query_prompt = f"""
-    You are a maritime historian. Using the following web sources:
-    {snippets}
-
-    Write a structured historical summary of '{builder_name}' as JSON with keys:
-    origins, early_work, wartime, growth_innovation, decline_closure, legacy, sources.
-    Sources should be a list of URLs.
-    """
-    client = OpenAI(api_key = OPENAI_API_KEY)
-    completion = client.chat.completions.create(
-        model="gpt-5",
-        messages=[{"role": "user", "content": query_prompt}],
-        response_format={"type": "json_object"}
-    )
-
-    history_json = json.loads(completion.choices[0].message.content)
+    # history_json = summarise(builder_name, search_results)
+    history_json = summarize_search_results(builder_name, search_results)
 
     # Step 3: Store
     table.put_item(Item={

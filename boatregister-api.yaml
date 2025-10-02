@@ -7,8 +7,8 @@ Resources:
     Properties:
       FunctionName: boatregister-api
       Description: An AWS lambda function that sits behind an api gateway.
-      MemorySize: 128
-      Timeout: 3
+      MemorySize: 256
+      Timeout: 20
       Handler: lambda_function.lambda_handler
       InlineCode: >-
         def lambda_handler(event, context):
@@ -31,12 +31,16 @@ Resources:
             ParameterName: SERPAPI/*
         - SSMParameterReadPolicy:
             ParameterName: OPENAI/*
+        - SSMParameterReadPolicy:
+            ParameterName: GEMINI/*
         - SNSPublishMessagePolicy:
             TopicName: boatenquiry
         - DynamoDBCrudPolicy:
             TableName: public_*
         - DynamoDBCrudPolicy:
             TableName: member_*
+        - DynamoDBCrudPolicy:
+            TableName: geonames_cache 
         - SESCrudPolicy:
             IdentityName: '*'
         - Statement:

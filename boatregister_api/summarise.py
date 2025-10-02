@@ -26,13 +26,7 @@ def buildersummary_internal(builders, builder):
         return f"Error: {str(e)}"
 
 
-def buildersummary(builders, qsp, timestamp):
-    if 'builder' not in qsp:
-        return {
-            'statusCode': 400,
-            'body': json.dumps("missing builder parameter")
-        }
-    builder = qsp['builder']
+def buildersummary(builders, builder, timestamp):
     summary = fetch_boatbuilder_history(builders, builder)
     if not summary:
         return {
