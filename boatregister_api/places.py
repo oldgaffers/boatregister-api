@@ -1,6 +1,6 @@
 import json
 from geonames import geonames
-from google import googlegeolocate
+from locate import googlegeolocate
 
 def mapDdbData(item):
   data = { **item }
