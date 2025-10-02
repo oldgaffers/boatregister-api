@@ -19,8 +19,7 @@ def mapDdbData(item):
 def save(ddb_table, qsp, data, timestamp):
   ddb_table.put_item(Item={**qsp, **data, 'timestamp': timestamp + 86400 })
 
-def geocode(dynamodb, qsp, timestamp):
-  name = qsp['name']
+def geocode(dynamodb, name, timestamp):
   ddb_table = dynamodb.Table('geonames_cache')
   r = ddb_table.get_item(Key={ 'name': name })
   if 'Item' in r:
