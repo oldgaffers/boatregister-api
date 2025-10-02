@@ -142,7 +142,8 @@ def gets(scope, table, qsp, timestamp):
             'statusCode': meta['HTTPStatusCode'],
             'body': json.dumps({ 'Items': items, 'Count': len(items), 'ScannedCount': data['ScannedCount']})
         }
-    except:
+    except Exception as e:
+        print(e)
         return {
             'statusCode': 404,
             'body': json.dumps("that doesn't seem to be here")
