@@ -36,7 +36,7 @@ Resources:
         - DynamoDBCrudPolicy:
             TableName: public_*
         - DynamoDBCrudPolicy:
-            TableName: private_*
+            TableName: member_*
         - SESCrudPolicy:
             IdentityName: '*'
         - Statement:
@@ -74,14 +74,14 @@ Resources:
           - "http://localhost:3000"
           - "http://localhost:5173"
         AllowHeaders:
-          - *
+          - '*'
         AllowMethods:
           - GET
           - POST
           - PUT
           - OPTIONS
         MaxAge: 600
-        AllowCredentials: true
+        AllowCredentials: false
       Auth:
         Authorizers:
           OAuth2Authorizer:
