@@ -71,11 +71,14 @@ Resources:
         AllowOrigins:
           - "https://oga.org.uk"
           - "https://www.oga.org.uk"
+          - "http://localhost:3000"
+          - "http://localhost:5173"
         AllowHeaders:
-          - x-apigateway-header
+          - *
         AllowMethods:
           - GET
           - POST
+          - OPTIONS
         MaxAge: 600
         AllowCredentials: true
       Auth:
