@@ -63,30 +63,30 @@ Resources:
             ApiId: !Ref HttpApi
             Method: POST
             Path: /shuffle
-	HttpApi:
+  HttpApi:
     Type: AWS::Serverless::HttpApi
     Properties:
-    	StageName: default
-			CorsConfiguration:
-  			AllowOrigins:
-    			- "https://oga.org.uk"
-    			- "https://www.oga.org.uk"
-  			AllowHeaders:
-    			- x-apigateway-header
-  			AllowMethods:
-    			- GET
-					- POST
-  			MaxAge: 600
-  			AllowCredentials: true
-			Auth:
-			  Authorizers:
-    			OAuth2Authorizer:
-#      			AuthorizationScopes:
-#        			- scope1
-#        			- scope2
-      			JwtConfiguration:
-        			issuer: "https://dev-uf87e942.eu.auth0.com/"
-        			audience:
-          			- https://oga.org.uk/boatregister
-      			IdentitySource: "$request.header.Authorization"
-  			DefaultAuthorizer: OAuth2Authorizer
+      StageName: default
+      CorsConfiguration:
+        AllowOrigins:
+          - "https://oga.org.uk"
+          - "https://www.oga.org.uk"
+        AllowHeaders:
+          - x-apigateway-header
+        AllowMethods:
+          - GET
+          - POST
+        MaxAge: 600
+        AllowCredentials: true
+      Auth:
+        Authorizers:
+          OAuth2Authorizer:
+#            AuthorizationScopes:
+#              - scope1
+#              - scope2
+            JwtConfiguration:
+              issuer: "https://dev-uf87e942.eu.auth0.com/"
+              audience:
+                - https://oga.org.uk/boatregister
+            IdentitySource: "$request.header.Authorization"
+        DefaultAuthorizer: OAuth2Authorizer
