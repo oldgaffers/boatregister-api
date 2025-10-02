@@ -197,7 +197,11 @@ def lambda_handler(event, context):
     scope = event['pathParameters'].get('scope', 'public')
     table = event['pathParameters'].get('table', '')
     if 'authorizer' in event['requestContext']:
-        claims = event['requestContext']['authorizer']['claims']
+        auth = event['requestContext']['authorizer']
+        if 'jwt' in auth:
+            claims = auth['jwt']['claims']
+        else:
+            claims = auth['claims']
     else:
         claims = {'https://oga.org.uk/roles': '[]'}
     roles = claims['https://oga.org.uk/roles'][1:-1].split(' ')
