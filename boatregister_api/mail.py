@@ -63,7 +63,7 @@ def sendmail(mail):
         server.quit()
         # print('mail sent', json.dumps(headers))
     except Exception as e:
-        print(e)
+        print(f"[ERROR] Could not send {mail}: {e}")
         sendusingses(fromaddr, mail)
     return {
         'statusCode': 200,

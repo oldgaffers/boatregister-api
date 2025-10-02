@@ -148,7 +148,7 @@ def gets(scope, table, qsp, timestamp):
             'body': json.dumps({ 'Items': items, 'Count': len(items), 'ScannedCount': data['ScannedCount']})
         }
     except Exception as e:
-        print(e)
+        print(f"[ERROR] Could not get from {scope} {table}: {e}")
         return {
             'statusCode': 404,
             'body': json.dumps("that doesn't seem to be here")

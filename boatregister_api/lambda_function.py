@@ -2,7 +2,7 @@ import simplejson as json
 from tables import gets, puts, posts
 
 def lambda_handler(event, context):
-    print(json.dumps(event))
+    # print(json.dumps(event))
     scope = event['pathParameters'].get('scope', 'public')
     table = event['pathParameters'].get('table', '')
     rq = event['requestContext']
