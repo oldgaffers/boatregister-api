@@ -25,8 +25,9 @@ def lambda_handler(event, context):
             'body': json.dumps("user does not have permission to access this table")
         } 
     method = event.get('httpMethod', rq['http']['method'])
+    qsp = event.get('queryStringParameters', {})
     if method == 'GET':
-        return gets(scope, table, event['queryStringParameters'], rq['timeEpoch'])
+        return gets(scope, table, qsp, rq['timeEpoch'])
     elif method == 'PUT':
         return puts(scope, table, json.loads(event['body']))
     elif method == 'POST':
