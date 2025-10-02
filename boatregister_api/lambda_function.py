@@ -217,7 +217,7 @@ def lambda_handler(event, context):
         } 
     method = event.get('httpMethod', rq['http']['method'])
     if method == 'GET':
-        return gets(scope, table, event['queryStringParameters'], rq['requestTimeEpoch'])
+        return gets(scope, table, event['queryStringParameters'], rq['timeEpoch'])
     elif method == 'PUT':
         return puts(scope, table, json.loads(event['body']))
     elif method == 'POST':
