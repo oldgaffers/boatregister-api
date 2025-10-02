@@ -130,7 +130,7 @@ def gets(scope, table, qsp, timestamp):
             data = ddb_table.scan()
             items = data['Items']
         elif table == 'place':
-            return geocode(dynamodb, qsp['name'], timestamp) 
+            return geocode(dynamodb, qsp, timestamp) 
         elif table == 'builder':
             if 'builder' not in qsp:
                 return {
