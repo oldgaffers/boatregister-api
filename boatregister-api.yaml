@@ -57,6 +57,14 @@ Resources:
             ApiId: !Ref HttpApi
             Method: POST
             Path: /{scope}/{table+}
+        public:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Method: GET
+            Path: /public/{table+}
+            Auth:
+              Authorizer: NONE
         Api3:
           Type: HttpApi
           Properties:
