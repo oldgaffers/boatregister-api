@@ -26,8 +26,8 @@ def buildersummary_internal(builders, builder):
         return f"Error: {str(e)}"
 
 
-def buildersummary(builders, builder, timestamp):
-    summary = fetch_boatbuilder_history(builders, builder)
+def buildersummary(builders, builder, place, timestamp):
+    summary = fetch_boatbuilder_history(builders, builder, place)
     if not summary:
         return {
             'statusCode': 404,

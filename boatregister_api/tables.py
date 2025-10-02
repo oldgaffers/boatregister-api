@@ -137,7 +137,7 @@ def gets(scope, table, qsp, timestamp):
                     'statusCode': 400,
                     'body': json.dumps("missing builder parameter")
                 }
-            return buildersummary(ddb_table, qsp['builder'], timestamp)            
+            return buildersummary(ddb_table, qsp['builder'], qsp.get('place'), timestamp)            
         else:
             sf = {key: { 'AttributeValueList': [paramMap(value)], 'ComparisonOperator': 'EQ'} for key, value in qsp.items()}
             data = ddb_table.scan(ScanFilter=sf)

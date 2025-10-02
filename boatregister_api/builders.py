@@ -42,7 +42,7 @@ def web_search_bing(query: str, num_results: int = 5) -> list:
 
 # --- Core Functions ---
 
-def fetch_boatbuilder_history(table, builder_name: str, engine: str = "serpapi") -> dict:
+def fetch_boatbuilder_history(table, builder_name: str, place: str, engine: str = "serpapi") -> dict:
     """
     Get a structured boatbuilder history.
     - Check DynamoDB cache first
@@ -55,7 +55,7 @@ def fetch_boatbuilder_history(table, builder_name: str, engine: str = "serpapi")
         return response["Item"]["history"]
 
     print(f"[CACHE MISS] Fetching new result for {builder_name}")
-    return _generate_and_store_history(table, builder_name, engine)
+    return _generate_and_store_history(table, builder_name, place, engine)
 
 
 def refresh_boatbuilder_history(builder_name: str, engine: str = "serpapi") -> dict:
@@ -91,11 +91,11 @@ def delete_boatbuilder_history(table, builder_name: str) -> bool:
 
 # --- Internal Helper ---
 
-def _generate_and_store_history(table, builder_name: str, engine: str) -> dict:
+def _generate_and_store_history(table, builder_name: str, place: str, engine: str) -> dict:
     """Private helper to search web, summarize, and store in DynamoDB."""
 
     # Step 1: Search
-    query = f"History of {builder_name} boatbuilder"
+    query = f"History of {builder_name} boatbuilder in {place}"
     if engine == "serpapi":
         search_results = web_search_serpapi(query)
     elif engine == "bing":
