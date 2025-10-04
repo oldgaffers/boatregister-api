@@ -1,4 +1,4 @@
-import json
+import simplejson as json
 import openai
 import os
 from builders import fetch_boatbuilder_history
