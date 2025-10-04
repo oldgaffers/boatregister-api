@@ -2,14 +2,6 @@ import json
 from google import genai
 import boto3
 
-api_key = None
-
-def set_api_key():
-    if api_key is None:
-        ssm = boto3.client('ssm')
-        r = ssm.get_parameter(Name='/GEMINI/API_KEY', WithDecryption=False)
-        api_key = r['Parameter']['Value']
-
 def summarize_search_results(builder_name, snippets):
     """
     Summarize web search results into structured JSON using Google Gemini.
@@ -21,7 +13,10 @@ def summarize_search_results(builder_name, snippets):
     Returns:
         Dictionary with structured historical summary
     """
-    set_api_key()
+
+    ssm = boto3.client('ssm')
+    r = ssm.get_parameter(Name='/GEMINI/API_KEY', WithDecryption=False)
+    api_key = r['Parameter']['Value']
     print('S', api_key, snippets)
     # Format snippets for the prompt
     formatted_snippets = "\n\n".join([
