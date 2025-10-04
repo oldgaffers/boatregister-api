@@ -8,7 +8,8 @@ ssm = boto3.client('ssm')
 # --- Web Search Engines ---
 
 def web_search_serpapi(query: str, num_results: int = 5) -> list:
-    """Query Google via SerpAPI and return simplified results."""
+  """Query Google via SerpAPI and return simplified results."""
+  try:
     r = ssm.get_parameter(Name='/SERPAPI/API_KEY', WithDecryption=False)
     API_KEY = r['Parameter']['Value']
     params = {"q": query, "engine": "google", "api_key": API_KEY, "num": num_results}
@@ -19,6 +20,10 @@ def web_search_serpapi(query: str, num_results: int = 5) -> list:
         {"title": item.get("title"), "link": item.get("link"), "snippet": item.get("snippet")}
         for item in data.get("organic_results", [])
     ]
+  except Exception as e:
+    print(e)
+    print('in web_search_serpapi)
+    return []
 
 def web_search_bing(query: str, num_results: int = 5) -> list:
     """Query Bing Web Search API and return simplified results."""
