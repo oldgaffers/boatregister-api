@@ -22,7 +22,7 @@ def web_search_serpapi(query: str, num_results: int = 5) -> list:
     ]
   except Exception as e:
     print(e)
-    print('in web_search_serpapi)
+    print('in web_search_serpapi')
     return []
 
 def web_search_bing(query: str, num_results: int = 5) -> list:
