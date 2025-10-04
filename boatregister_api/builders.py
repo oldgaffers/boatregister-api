@@ -5,20 +5,14 @@ from summarise_with_openai import summarise
 from gemini import summarize_search_results
 
 ssm = boto3.client('ssm')
-r = ssm.get_parameter(Name='/SERPAPI/API_KEY', WithDecryption=False)
-SERP_API_KEY = r['Parameter']['Value']
-SERP_URL = "https://serpapi.com/search.json"
-
-BING_API_KEY = "your_bing_api_key_here"
-BING_ENDPOINT = "https://api.bing.microsoft.com/v7.0/search"
-
-
 # --- Web Search Engines ---
 
 def web_search_serpapi(query: str, num_results: int = 5) -> list:
     """Query Google via SerpAPI and return simplified results."""
+    r = ssm.get_parameter(Name='/SERPAPI/API_KEY', WithDecryption=False)
+	SERP_API_KEY = r['Parameter']['Value']
     params = {"q": query, "engine": "google", "api_key": SERP_API_KEY, "num": num_results}
-    res = requests.get(SERP_URL, params=params)
+    res = requests.get("https://serpapi.com/search.json", params=params)
     res.raise_for_status()
     data = res.json()
     return [
@@ -26,12 +20,13 @@ def web_search_serpapi(query: str, num_results: int = 5) -> list:
         for item in data.get("organic_results", [])
     ]
 
-
 def web_search_bing(query: str, num_results: int = 5) -> list:
     """Query Bing Web Search API and return simplified results."""
-    headers = {"Ocp-Apim-Subscription-Key": BING_API_KEY}
+    r = ssm.get_parameter(Name='/BING/API_KEY', WithDecryption=False)
+    API_KEY = r['Parameter']['Value']
+    headers = {"Ocp-Apim-Subscription-Key": API_KEY}
     params = {"q": query, "count": num_results}
-    res = requests.get(BING_ENDPOINT, headers=headers, params=params)
+    res = requests.get("https://api.bing.microsoft.com/v7.0/search", headers=headers, params=params)
     res.raise_for_status()
     data = res.json()
     return [
