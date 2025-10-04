@@ -18,12 +18,11 @@ def summarize_search_results(builder_name, snippets):
         builder_name: Name of the ship builder to research
         snippets: list with search results, e.g.:
                  [{'title':'snippet': 'text', 'link': 'uri'},  ...]
-    S
     Returns:
         Dictionary with structured historical summary
     """
     set_api_key()
-
+    print('S', api_key, snippets)
     # Format snippets for the prompt
     formatted_snippets = "\n\n".join([
         f"{s['title']}: {s['snippet']}\nSource: {s['link']}\n" 
