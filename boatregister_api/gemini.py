@@ -34,10 +34,15 @@ def summarize_search_results(builder_name, snippets):
 
 Write a structured historical summary of '{builder_name}' as JSON with these keys:
 - origins: Brief history of how the company started
-- early_work: Description of their early shipbuilding projects
-- notable_vessels: List of significant ships they built
+- early_work: Description of their early boat building activities
+- notable_vessels: List of significant vessels they built
 - legacy: Their lasting impact on maritime history
 - sources: List of source URLs used
+
+Ensure '{builder_name}' is treated exclusively as a proper noun
+and not as a description of an activity.
+
+Disregard anything before 1800 CE.
 
 Return ONLY valid JSON, no other text."""
     client = genai.Client(api_key=api_key)
