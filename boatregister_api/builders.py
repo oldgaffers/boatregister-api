@@ -10,8 +10,8 @@ ssm = boto3.client('ssm')
 def web_search_serpapi(query: str, num_results: int = 5) -> list:
     """Query Google via SerpAPI and return simplified results."""
     r = ssm.get_parameter(Name='/SERPAPI/API_KEY', WithDecryption=False)
-	SERP_API_KEY = r['Parameter']['Value']
-    params = {"q": query, "engine": "google", "api_key": SERP_API_KEY, "num": num_results}
+	API_KEY = r['Parameter']['Value']
+	params = {"q": query, "engine": "google", "api_key": API_KEY, "num": num_results}
     res = requests.get("https://serpapi.com/search.json", params=params)
     res.raise_for_status()
     data = res.json()
