@@ -95,7 +95,7 @@ def _generate_and_store_history(table, builder_name: str, place: str, engine: st
     """Private helper to search web, summarize, and store in DynamoDB."""
 
     # Step 1: Search
-    query = f"History of {builder_name} boatbuilder in {place}"
+    query = f"History of {builder_name} building yachts, dinghies, fishing boats or coastal craft in {place}"
     if engine == "serpapi":
         search_results = web_search_serpapi(query)
     elif engine == "bing":
