@@ -104,12 +104,17 @@ def _generate_and_store_history(table, builder_name: str, place: str, engine: st
         raise ValueError("Unknown search engine")
 
     # history_json = summarise(builder_name, search_results)
-    history_json = summarize_search_results(builder_name, search_results)
-
-    # Step 3: Store
-    table.put_item(Item={
+    print('X')
+    try:
+      history_json = summarize_search_results(builder_name, search_results)
+      print('Y')
+      # Step 3: Store
+      table.put_item(Item={
         "builder": builder_name,
         "history": history_json
-    })
+      })
 
-    return history_json
+      return history_json
+    except Exception as e:
+      print ('summarise', e)
+      return None
