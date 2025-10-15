@@ -1,5 +1,6 @@
 import simplejson as json
 from tables import gets, puts, posts
+from shuffle import shuffle
 
 def lambda_handler(event, context):
     # print(json.dumps(event))
@@ -31,6 +32,8 @@ def lambda_handler(event, context):
     elif method == 'PUT':
         return puts(scope, table, json.loads(event['body']))
     elif method == 'POST':
+        if rq['http']['path'].endswith('shuffle'):
+            return shuffle()
         return posts(scope, table, json.loads(event['body']))
     else:
         return {
