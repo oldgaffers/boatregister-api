@@ -22,6 +22,10 @@ Resources:
         MaximumEventAgeInSeconds: 21600
         MaximumRetryAttempts: 2
       PackageType: Zip
+      Environment:
+        Variables:
+          ID_POOL: 5110b2a1-6761-40f9-bd39-3d00bf8f5629
+          UPLOAD_BUCKET: boatregister_upload
       Policies:
         - SSMParameterReadPolicy:
             ParameterName: GITHUB_TOKEN
@@ -71,12 +75,18 @@ Resources:
             Path: /public/{table+}
             Auth:
               Authorizer: NONE
-        Api3:
+        shuffle:
           Type: HttpApi
           Properties:
             ApiId: !Ref HttpApi
             Method: POST
             Path: /shuffle
+        uc:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Method: GET
+            Path: /upload_credentials
   HttpApi:
     Type: AWS::Serverless::HttpApi
     Properties:
