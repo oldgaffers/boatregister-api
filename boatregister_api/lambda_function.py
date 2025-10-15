@@ -1,6 +1,8 @@
+import os
 import simplejson as json
 from tables import gets, puts, posts
 from shuffle import shuffle
+import get_upload_credentials
 
 def lambda_handler(event, context):
     # print(json.dumps(event))
@@ -28,6 +30,10 @@ def lambda_handler(event, context):
     method = event.get('httpMethod', rq['http']['method'])
     qsp = event.get('queryStringParameters', {})
     if method == 'GET':
+        if rq['http']['path'].endswith('upload_credentials'):
+            bucket = os.environ.get('UPLOAD_BUCKET', None)
+            pool = os.environ.get('ID_POOL', None)
+            return get_upload_credentials.handler(pool, bucket)
         return gets(scope, table, qsp, rq['timeEpoch'])
     elif method == 'PUT':
         return puts(scope, table, json.loads(event['body']))
