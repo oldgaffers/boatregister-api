@@ -24,6 +24,8 @@ Resources:
       PackageType: Zip
       Policies:
         - SSMParameterReadPolicy:
+            ParameterName: GITHUB_TOKEN
+        - SSMParameterReadPolicy:
             ParameterName: MAIL_*
         - SSMParameterReadPolicy:
             ParameterName: GOOGLE/GEO_API_KEY
