@@ -87,6 +87,8 @@ Resources:
             ApiId: !Ref HttpApi
             Method: GET
             Path: /upload_credentials
+            Auth:
+              Authorizer: NONE
   HttpApi:
     Type: AWS::Serverless::HttpApi
     Properties:

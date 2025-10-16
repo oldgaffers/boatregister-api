@@ -6,8 +6,6 @@ import get_upload_credentials
 
 def lambda_handler(event, context):
     # print(json.dumps(event))
-    scope = event['pathParameters'].get('scope', 'public')
-    table = event['pathParameters'].get('table', '')
     rq = event['requestContext']
     if 'authorizer' in rq:
         auth = rq['authorizer']
@@ -19,6 +17,9 @@ def lambda_handler(event, context):
         claims = {'https://oga.org.uk/roles': '[]'}
     roles = claims['https://oga.org.uk/roles'][1:-1].split(' ')
     roles.append('public')
+    pp = event.get('pathParameters', {})
+    scope = pp.get('scope', 'public')
+    table = pp.get('table', '')    
     if scope in roles:
         # print('scope matches')
         pass
