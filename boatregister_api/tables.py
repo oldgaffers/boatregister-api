@@ -133,6 +133,7 @@ def gets(scope, table, qsp, timestamp):
                     'statusCode': 400,
                     'body': json.dumps("missing builder parameter")
                 }
+            ddb_table = dynamodb.Table(f"{scope}_{table}")
             return buildersummary(ddb_table, qsp['builder'], qsp.get('place'), timestamp)
         if scope != 'public' and table == 'members':
             ddb_table = dynamodb.Table('members')
@@ -140,13 +141,15 @@ def gets(scope, table, qsp, timestamp):
             fields = json.loads(qsp.get('fields', []))
             data = ddb_table.scan(ScanFilter=sf)
             items = [{k:item[k] for k in item.keys() if k in fields} for item in data['Items']]
-        elif qsp is None:
-            data = ddb_table.scan()
-            items = data['Items']
         else:
-            sf = {key: { 'AttributeValueList': [paramMap(value)], 'ComparisonOperator': 'EQ'} for key, value in qsp.items()}
-            data = ddb_table.scan(ScanFilter=sf)
-            items = [{k:item[k] for k in item.keys() if k not in ['hide','paym']} for item in data['Items'] if 'hide' not in item or not item['hide']]
+            ddb_table = dynamodb.Table(f"{scope}_{table}")
+            if qsp is None:
+                data = ddb_table.scan()
+                items = data['Items']
+            else:
+                sf = {key: { 'AttributeValueList': [paramMap(value)], 'ComparisonOperator': 'EQ'} for key, value in qsp.items()}
+                data = ddb_table.scan(ScanFilter=sf)
+                items = [{k:item[k] for k in item.keys() if k not in ['hide','paym']} for item in data['Items'] if 'hide' not in item or not item['hide']]
         meta = data.pop('ResponseMetadata')
         return {
             'statusCode': meta['HTTPStatusCode'],
