@@ -124,20 +124,25 @@ def putChangedFields(scope, table, body):
     ddb_table.put_item(Item=data)
 
 def gets(scope, table, qsp, timestamp):
-    ddb_table = dynamodb.Table(f"{scope}_{table}")
     try:
-        if qsp is None:
-            data = ddb_table.scan()
-            items = data['Items']
-        elif table == 'place':
+        if table == 'place':
             return geocode(dynamodb, qsp, timestamp) 
-        elif table == 'builder':
+        if table == 'builder':
             if 'builder' not in qsp:
                 return {
                     'statusCode': 400,
                     'body': json.dumps("missing builder parameter")
                 }
-            return buildersummary(ddb_table, qsp['builder'], qsp.get('place'), timestamp)            
+            return buildersummary(ddb_table, qsp['builder'], qsp.get('place'), timestamp)
+        if scope != 'public' and table == 'members':
+            ddb_table = dynamodb.Table('members')
+            sf = json.loads(qsp.get('sf', None))
+            fields = json.loads(qsp.get('fields', []))
+            data = ddb_table.scan(ScanFilter=sf)
+            items = [{k:item[k] for k in item.keys() if k in fields} for item in data['Items']]
+        elif qsp is None:
+            data = ddb_table.scan()
+            items = data['Items']
         else:
             sf = {key: { 'AttributeValueList': [paramMap(value)], 'ComparisonOperator': 'EQ'} for key, value in qsp.items()}
             data = ddb_table.scan(ScanFilter=sf)
