@@ -1,5 +1,4 @@
 from golds3 import getMember
-from mail import sendmail
 
 def getDear(members):
     n = [o['Firstname'] for o in members]
@@ -40,16 +39,9 @@ def compose_enquiry(body):
     # print('compose_enquiry', mail)
     return mail
 
-def contact(body):
-    return sendmail(compose_contact(body))
-
 def compose_profile(body):
     id = body.get('id', body.get('member', None))
     mail = { 'subject': f"Membership data change request for {body['firstname']} {body['lastname']} ({id})"}
     mail['message'] = body['text']
     mail['to'] = ["membership@oga.org.uk"]
     return mail
-
-def profile(body):
-    mail = compose_profile(body)
-    return sendmail(mail)
