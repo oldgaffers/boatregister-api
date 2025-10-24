@@ -47,6 +47,8 @@ Resources:
             TableName: member_*
         - DynamoDBCrudPolicy:
             TableName: geonames_cache 
+        - DynamoDBReadPolicy:
+            TableName: members 
         - SESCrudPolicy:
             IdentityName: '*'
         - Statement:

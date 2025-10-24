@@ -9,16 +9,6 @@ import simplejson as json
 
 dynamodb = boto3.resource('dynamodb')
 
-def paramMap(val):
-    if val == 'true':
-        return True
-    if val == 'false':
-        return False
-    try:
-        return int(val)
-    except:
-        return val
-
 def enquiry(body):
     sns = boto3.client('sns')
     sns.publish(
@@ -55,6 +45,16 @@ def putChangedFields(scope, table, body):
     data = map_values(data)
     ddb_table.put_item(Item=data)
 
+def paramMap(val):
+    if val == 'true':
+        return True
+    if val == 'false':
+        return False
+    try:
+        return int(val)
+    except:
+        return val
+
 def gets(scope, table, qsp, timestamp):
     try:
         if table == 'place':
@@ -69,16 +69,16 @@ def gets(scope, table, qsp, timestamp):
             return buildersummary(ddb_table, qsp['builder'], qsp.get('place'), timestamp)
         if scope != 'public' and table == 'members':
             ddb_table = dynamodb.Table('members')
-            sf = json.loads(qsp.get('sf', None))
-            fields = json.loads(qsp.get('fields', []))
+            fields = qsp.get('fields', '').split(',')
             data = ddb_table.scan()
+            items = data['Items']
             if 'id' in qsp:
-                ids = qsp['id'].split(',')
-                data = [d for d in data if d['id'] in ids]
+                ids = [int(n) for n in qsp['id'].split(',')]
+                items = [d for d in items if d['id'] in ids]
             if 'member' in qsp:
-                members = qsp['member'].split(',')
-                data = [d for d in data if d['membership'] in members]
-            items = [{k:item[k] for k in item.keys() if k in fields} for item in data['Items']]
+                members = [int(n) for n in qsp['member'].split(',')]
+                items = [d for d in items if d['membership'] in members]
+            items = [{k:item[k] for k in item.keys() if k in fields} for item in items]
         else:
             ddb_table = dynamodb.Table(f"{scope}_{table}")
             if qsp is None:
