@@ -71,7 +71,13 @@ def gets(scope, table, qsp, timestamp):
             ddb_table = dynamodb.Table('members')
             sf = json.loads(qsp.get('sf', None))
             fields = json.loads(qsp.get('fields', []))
-            data = ddb_table.scan(ScanFilter=sf)
+            data = ddb_table.scan()
+            if 'id' in qsp:
+                ids = qsp['id'].split(',')
+                data = [d for d in data if d['id'] in ids]
+            if 'member' in qsp:
+                members = qsp['member'].split(',')
+                data = [d for d in data if d['member'] in members]
             items = [{k:item[k] for k in item.keys() if k in fields} for item in data['Items']]
         else:
             ddb_table = dynamodb.Table(f"{scope}_{table}")
