@@ -1,7 +1,7 @@
 from decimal import Decimal
 from updates import update_tables
 from places import geocode
-from emails import contact, profile, compose_enquiry
+from emails import compose_contact, compose_profile, compose_enquiry
 from mail import sendmail
 from summarise import buildersummary
 import boto3
@@ -123,11 +123,11 @@ def posts(scope, table, body):
             'body': json.dumps("triggered update from boatregister")
         }
     if table == 'contact':
-        return contact(body)
+        return sendmail(compose_contact(body))
     if table == 'enquiry':
         return enquiry(body)
     if table == 'profile':
-        return profile(body)
+        return sendmail(compose_profile(body))
     if 'to' in body or 'cc' in body or 'bcc' in body:
         return sendmail(body)
     if table != '':
