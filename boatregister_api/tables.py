@@ -77,7 +77,7 @@ def gets(scope, table, qsp, timestamp):
                 data = [d for d in data if d['id'] in ids]
             if 'member' in qsp:
                 members = qsp['member'].split(',')
-                data = [d for d in data if d['member'] in members]
+                data = [d for d in data if d['membership'] in members]
             items = [{k:item[k] for k in item.keys() if k in fields} for item in data['Items']]
         else:
             ddb_table = dynamodb.Table(f"{scope}_{table}")
