@@ -1,5 +1,5 @@
 from golds3 import getMember
-from email import sendmail
+from mail import sendmail
 
 def getDear(members):
     n = [o['Firstname'] for o in members]
