@@ -6,6 +6,7 @@ from mail import sendmail
 from summarise import buildersummary
 import boto3
 import simplejson as json
+from boto3.dynamodb.conditions import Key
 
 dynamodb = boto3.resource('dynamodb')
 
@@ -55,6 +56,11 @@ def paramMap(val):
     except:
         return val
 
+def memberq(rec, memberships):
+    m = int(str(rec['membership']))
+    print(f"[INFO] {rec['lastname']} membership: {m} type: {type(m)} memberships: {memberships}")
+    return m in memberships
+
 def gets(scope, table, qsp, timestamp):
     try:
         if table == 'place':
@@ -70,15 +76,32 @@ def gets(scope, table, qsp, timestamp):
         if scope != 'public' and table == 'members':
             ddb_table = dynamodb.Table('members')
             fields = qsp.get('fields', '').split(',')
-            data = ddb_table.scan()
-            items = data['Items']
             if 'id' in qsp:
                 ids = [int(n) for n in qsp['id'].split(',')]
-                items = [d for d in items if d['id'] in ids]
-            if 'member' in qsp:
+                if len(ids) == 1:
+                    data = ddb_table.query(KeyConditionExpression=Key('id').eq(ids[0]))
+                    items = data['Items']
+                else:
+                    data = ddb_table.scan(Limit=10000)
+                    items = [d for d in data['Items'] if d['id'] in ids]
+            elif 'member' in qsp:
                 members = [int(n) for n in qsp['member'].split(',')]
-                items = [d for d in items if d['membership'] in members]
+                print(f"[INFO] members: {members}")
+                if len(members) == 1:
+                    data = ddb_table.query(KeyConditionExpression=Key('membership').eq(members[0]))
+                    print(f"[INFO] response: {data}")
+                    items = data['Items']
+                else:
+                    data = ddb_table.scan(Limit=10000)
+                    items = [d for d in data['Items'] if memberq(d, members)]
+                print(f"[INFO] filtered items: {items}")
+            else:
+                data = ddb_table.scan(Limit=10000)
+                items = data['Items']
             items = [{k:item[k] for k in item.keys() if k in fields} for item in items]
+            print(f"[INFO] Got {len(items)} items from {scope} {table}")
+            print(f"[INFO] query: {json.dumps(qsp)}")
+            print(f"[INFO] items: {json.dumps(items)}")
         else:
             ddb_table = dynamodb.Table(f"{scope}_{table}")
             if qsp is None:
