@@ -102,7 +102,7 @@ def gets(scope, table, qsp, timestamp):
             if ','  in f:
                 fields = [x.strip() for x in f.split(',')]
             elif f == '':
-                f = []
+                fields = []
             else:
                 fields = [f]
         if 'id' in p:
