@@ -6,7 +6,7 @@ from mail import sendmail
 from summarise import buildersummary
 import boto3
 import simplejson as json
-from boto3.dynamodb.conditions import Key
+from boto3.dynamodb.conditions import Key, Attr
 
 dynamodb = boto3.resource('dynamodb')
 
@@ -56,12 +56,28 @@ def paramMap(val):
     except:
         return val
 
-def memberq(rec, memberships):
-    m = int(str(rec['membership']))
-    print(f"[INFO] {rec['lastname']} membership: {m} type: {type(m)} memberships: {memberships}")
-    return m in memberships
+def queryOrScan(ddb_table, attr, values, fields):
+    if len(values) == 1:
+        data = ddb_table.query(KeyConditionExpression=Key(attr).eq(values[0]), ProjectionExpression=', '.join(fields))
+        total = data['ScannedCount']
+        items = data['Items']
+    else:
+        fe = Attr(attr).is_in(values)
+        data = ddb_table.scan(FilterExpression=fe)
+        more = True
+        items = data['Items']
+        total = data['ScannedCount']
+        while more:
+            if 'LastEvaluatedKey' in data:
+                data = ddb_table.scan(FilterExpression=fe, ProjectionExpression=', '.join(fields), ExclusiveStartKey=data['LastEvaluatedKey'])
+                items.extend(data['Items'])
+                total += data['ScannedCount']
+            else:
+                more = False
+    return items, total
 
 def gets(scope, table, qsp, timestamp):
+    total = 0
     try:
         if table == 'place':
             return geocode(dynamodb, qsp, timestamp) 
@@ -75,47 +91,42 @@ def gets(scope, table, qsp, timestamp):
             return buildersummary(ddb_table, qsp['builder'], qsp.get('place'), timestamp)
         if scope != 'public' and table == 'members':
             ddb_table = dynamodb.Table('members')
-            fields = qsp.get('fields', '').split(',')
-            if 'id' in qsp:
-                ids = [int(n) for n in qsp['id'].split(',')]
-                if len(ids) == 1:
-                    data = ddb_table.query(KeyConditionExpression=Key('id').eq(ids[0]))
-                    items = data['Items']
-                else:
-                    data = ddb_table.scan(Limit=10000)
-                    items = [d for d in data['Items'] if d['id'] in ids]
-            elif 'member' in qsp:
-                members = [int(n) for n in qsp['member'].split(',')]
-                print(f"[INFO] members: {members}")
-                if len(members) == 1:
-                    data = ddb_table.query(KeyConditionExpression=Key('membership').eq(members[0]))
-                    print(f"[INFO] response: {data}")
-                    items = data['Items']
-                else:
-                    data = ddb_table.scan(Limit=10000)
-                    items = [d for d in data['Items'] if memberq(d, members)]
-                print(f"[INFO] filtered items: {items}")
-            else:
-                data = ddb_table.scan(Limit=10000)
-                items = data['Items']
-            items = [{k:item[k] for k in item.keys() if k in fields} for item in items]
-            print(f"[INFO] Got {len(items)} items from {scope} {table}")
-            print(f"[INFO] query: {json.dumps(qsp)}")
-            print(f"[INFO] items: {json.dumps(items)}")
         else:
             ddb_table = dynamodb.Table(f"{scope}_{table}")
-            if qsp is None:
-                data = ddb_table.scan()
-                items = data['Items']
-            else:
-                sf = {key: { 'AttributeValueList': [paramMap(value)], 'ComparisonOperator': 'EQ'} for key, value in qsp.items()}
-                data = ddb_table.scan(ScanFilter=sf)
-                items = [{k:item[k] for k in item.keys() if k not in ['hide','paym']} for item in data['Items'] if 'hide' not in item or not item['hide']]
-        meta = data.pop('ResponseMetadata')
-        return {
-            'statusCode': meta['HTTPStatusCode'],
-            'body': json.dumps({ 'Items': items, 'Count': len(items), 'ScannedCount': data['ScannedCount']})
-        }
+        if qsp is None:
+            p = {}
+            fields = []
+        else:
+            p = qsp
+            fields = p.pop('fields', '').split(',')
+        if 'id' in p:
+            ids = [int(n) for n in p['id'].split(',')]
+            items, total = queryOrScan(ddb_table, 'id', ids, fields)
+        elif 'member' in p:
+            members = [int(n) for n in p['member'].split(',')]
+            items, total = queryOrScan(ddb_table, 'membership', members, fields)
+        else:
+            scan_kwargs = {}
+            if len(fields) > 0:
+                scan_kwargs['ProjectionExpression'] = ', '.join(fields)
+            if p != {}:
+                scan_kwargs['FilterExpression'] = Attr(list(p.keys())[0]).eq(paramMap(list(p.values())[0]))
+            data = ddb_table.scan(**scan_kwargs)
+            items = data['Items']
+            total = data['ScannedCount']
+            more = True
+            while more:
+                if 'LastEvaluatedKey' in data:
+                    scan_kwargs['ExclusiveStartKey'] = data['LastEvaluatedKey']
+                    data = ddb_table.scan(**scan_kwargs)
+                    items.extend(data['Items'])
+                    total += data['ScannedCount']
+                else:
+                    more = False
+            return {
+                'statusCode': 200,
+                'body': json.dumps({ 'Items': items, 'Count': len(items), 'ScannedCount': total})
+            }
     except Exception as e:
         print(f"[ERROR] Could not get from {scope} {table}: {e}")
         return {
