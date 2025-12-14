@@ -63,7 +63,7 @@ def queryOrScan(ddb_table, attr, values, fields):
         items = data['Items']
     else:
         fe = Attr(attr).is_in(values)
-        data = ddb_table.scan(FilterExpression=fe)
+        data = ddb_table.scan(FilterExpression=fe, ProjectionExpression=', '.join(fields))
         more = True
         items = data['Items']
         total = data['ScannedCount']
@@ -123,10 +123,10 @@ def gets(scope, table, qsp, timestamp):
                     total += data['ScannedCount']
                 else:
                     more = False
-            return {
-                'statusCode': 200,
-                'body': json.dumps({ 'Items': items, 'Count': len(items), 'ScannedCount': total})
-            }
+        return {
+            'statusCode': 200,
+            'body': json.dumps({ 'Items': items, 'Count': len(items), 'ScannedCount': total})
+        }
     except Exception as e:
         print(f"[ERROR] Could not get from {scope} {table}: {e}")
         return {
