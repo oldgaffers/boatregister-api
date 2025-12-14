@@ -98,7 +98,11 @@ def gets(scope, table, qsp, timestamp):
             fields = []
         else:
             p = qsp
-            fields = p.pop('fields', '').split(',')
+            f = p.pop('fields', '').strip()
+            if ','  in f:
+                fields = [x.strip() for x in f.split(',')]
+            else:
+                fields = [f] if f != '' else []
         if 'id' in p:
             ids = [int(n) for n in p['id'].split(',')]
             items, total = queryOrScan(ddb_table, 'id', ids, fields)
