@@ -14,5 +14,6 @@ def handler(pool, bucket):
                 'bucketName': bucket,
                  'region': 'eu-west-1',
                  'identityId': identityId,
+                 'identityPoolId': idpool,
             })
         }
