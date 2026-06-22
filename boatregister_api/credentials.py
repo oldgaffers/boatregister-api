@@ -17,7 +17,7 @@ def guest(pool, bucket):
             })
         }
 
-def member(pool, bucket, user):
+def member(pool, user):
         idpool = f'eu-west-1:{pool}'
         cognito = boto3.client('cognito-identity')
         response = cognito.get_open_id_token_for_developer_identity(
@@ -29,7 +29,6 @@ def member(pool, bucket, user):
             'statusCode': 200,
             'headers': { 'content-type': 'application/json'},
             'body': json.dumps({
-                'bucketName': bucket,
                  'region': 'eu-west-1',
                  'identityId': identityId,
                  'identityPoolId': idpool,

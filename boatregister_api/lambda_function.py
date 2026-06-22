@@ -36,9 +36,8 @@ def lambda_handler(event, context):
             pool = os.environ.get('ID_POOL', None)
             return credentials.guest(pool, bucket)
         elif rq['http']['path'].endswith('/credentials'):
-            bucket = qsp.get('bucket', os.environ.get('UPLOAD_BUCKET', None))
             pool = os.environ.get('ID_POOL', None)
-            return credentials.member(pool, bucket, f"gold:{claims['oga.org.uk/id']}")
+            return credentials.member(pool, f"gold:{claims['oga.org.uk/id']}")
         return gets(scope, table, qsp, rq['timeEpoch'])
     elif method == 'PUT':
         return puts(scope, table, json.loads(event['body']))
