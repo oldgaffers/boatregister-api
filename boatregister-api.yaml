@@ -26,6 +26,7 @@ Resources:
         Variables:
           ID_POOL: 5110b2a1-6761-40f9-bd39-3d00bf8f5629
           UPLOAD_BUCKET: boatregister-upload
+          GOOGLE_GEOCODING_API_KEY: xxx
       Policies:
         - SSMParameterReadPolicy:
             ParameterName: GITHUB_TOKEN
