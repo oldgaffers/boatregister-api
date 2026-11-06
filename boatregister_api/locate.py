@@ -1,11 +1,9 @@
+import os
 import json
 import urllib.request
 import urllib.parse
-import boto3
 
-ssm = boto3.client('ssm')
-r = ssm.get_parameter(Name='/GOOGLE/GEO_API_KEY')
-api_key = r['Parameter']['Value']
+api_key = os.environ['GOOGLE_GEOCODING_API_KEY']
 
 def googlegeolocate(place):
   url = f'https://maps.googleapis.com/maps/api/geocode/json?key={api_key}&address={urllib.parse.quote(place)}'
