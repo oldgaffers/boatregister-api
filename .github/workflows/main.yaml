@@ -37,8 +37,14 @@ jobs:
       - name: deploy
         env:
           GOOGLE_GEOCODING_API_KEY: ${{ secrets.GOOGLE_GEOCODING_API_KEY }}
+          ID_POOL: ${{ vars.ID_POOL }}
+          UPLOAD_BUCKET: ${{ vars.UPLOAD_BUCKET }}
         run: |
           aws lambda update-function-code --function-name boatregister-api --zip-file fileb://lambda.zip
           aws lambda wait function-updated --function-name boatregister-api
-          aws lambda update-function-configuration --function-name boatregister-api --environment "{\"Variables\":{\
-            \"GOOGLE_GEOCODING_API_KEY\":\"$GOOGLE_GEOCODING_API_KEY\" }}"
+          aws lambda update-function-configuration --function-name boatregister-api \
+          --environment Variables={\
+            GOOGLE_GEOCODING_API_KEY=$GOOGLE_GEOCODING_API_KEY,\
+            ID_POOL=$ID_POOL,\
+            UPLOAD_BUCKET=$UPLOAD_BUCKET\
+            }
